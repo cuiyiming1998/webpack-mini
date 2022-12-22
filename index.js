@@ -4,6 +4,7 @@ import parser from '@babel/parser'
 import traverse from '@babel/traverse'
 import ejs from 'ejs'
 import { transformFromAst } from 'babel-core'
+
 let id = 0
 
 function createAsset(filePath) {
