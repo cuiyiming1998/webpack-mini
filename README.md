@@ -57,3 +57,18 @@
 	{ './foo.js': 2 }
 ],
 ```
+
+## 运行
+```
+node index.js
+```
+
+打开`example`中的`index.html`
+
+成功后在控制台会输出
+
+```
+foo
+bar
+main.js
+```
