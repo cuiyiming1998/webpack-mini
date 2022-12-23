@@ -4,14 +4,46 @@ import parser from '@babel/parser'
 import traverse from '@babel/traverse'
 import ejs from 'ejs'
 import { transformFromAst } from 'babel-core'
+import { jsonLoader } from './jsonLoader.js'
 
 let id = 0
 
+const webpackConfig = {
+	module: {
+		rules: [
+			{
+				test: /\.json$/,
+				use: [ jsonLoader ]
+			}
+		]
+	}
+}
+
 function createAsset(filePath) {
 	// 1. 获取文件的内容
-	const source = fs.readFileSync(filePath, {
+	let source = fs.readFileSync(filePath, {
 		encoding: 'utf-8'
 	})
+
+  // 查看当前filePath 在loader中有没有匹配
+  // 如果有匹配 则调用loader转换source
+  const loaders = webpackConfig.module.rules
+  const loaderContext = {
+    addDeps(dep) {
+      console.log('addDeps', dep)
+    }
+  }
+
+  loaders.forEach(({ test, use }) => {
+    if (test.test(filePath)) {
+      if (Array.isArray(use)) {
+        use.reverse().forEach(fn => {
+          // 改变this, 把loaderContext写入
+          source = fn.call(loaderContext, source)
+        })
+      }
+    }
+  })
 
 	// 2. 获取依赖关系
 	// 解析ast树, 获取node.source.value
