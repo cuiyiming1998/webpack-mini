@@ -5,6 +5,8 @@ import traverse from '@babel/traverse'
 import ejs from 'ejs'
 import { transformFromAst } from 'babel-core'
 import { jsonLoader } from './jsonLoader.js'
+import { ChangeOutputPath } from './changeOutputPath.js'
+import { SyncHook } from 'tapable'
 
 let id = 0
 
@@ -13,10 +15,16 @@ const webpackConfig = {
 		rules: [
 			{
 				test: /\.json$/,
-				use: [ jsonLoader ]
+				use: [jsonLoader]
 			}
 		]
-	}
+	},
+
+	plugins: [new ChangeOutputPath()]
+}
+
+const hooks = {
+  emitFile: new SyncHook(['context'])
 }
 
 function createAsset(filePath) {
@@ -25,25 +33,25 @@ function createAsset(filePath) {
 		encoding: 'utf-8'
 	})
 
-  // 查看当前filePath 在loader中有没有匹配
-  // 如果有匹配 则调用loader转换source
-  const loaders = webpackConfig.module.rules
-  const loaderContext = {
-    addDeps(dep) {
-      console.log('addDeps', dep)
-    }
-  }
+	// 查看当前filePath 在loader中有没有匹配
+	// 如果有匹配 则调用loader转换source
+	const loaders = webpackConfig.module.rules
+	const loaderContext = {
+		addDeps(dep) {
+			console.log('addDeps', dep)
+		}
+	}
 
-  loaders.forEach(({ test, use }) => {
-    if (test.test(filePath)) {
-      if (Array.isArray(use)) {
-        use.reverse().forEach(fn => {
-          // 改变this, 把loaderContext写入
-          source = fn.call(loaderContext, source)
-        })
-      }
-    }
-  })
+	loaders.forEach(({ test, use }) => {
+		if (test.test(filePath)) {
+			if (Array.isArray(use)) {
+				use.reverse().forEach(fn => {
+					// 改变this, 把loaderContext写入
+					source = fn.call(loaderContext, source)
+				})
+			}
+		}
+	})
 
 	// 2. 获取依赖关系
 	// 解析ast树, 获取node.source.value
@@ -91,6 +99,15 @@ function createGraph() {
 	return queue
 }
 
+function initPlugins() {
+  const plugins = webpackConfig.plugins
+
+  plugins.forEach(plugin => {
+    plugin.apply(hooks)
+  })
+}
+initPlugins()
+
 const graph = createGraph()
 
 function build(graph) {
@@ -106,7 +123,14 @@ function build(graph) {
 	})
 	const code = ejs.render(template, { data })
 	// 将生成的代码放进dist里
-	fs.writeFileSync('./dist/bundle.js', code)
+  let outputPath = './dist/bundle.js'
+  const context = {
+    changeOutputPath(path) {
+      outputPath = path
+    }
+  }
+  hooks.emitFile.call(context)
+	fs.writeFileSync(outputPath, code)
 }
 
 build(graph)

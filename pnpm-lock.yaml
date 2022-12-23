@@ -6,6 +6,7 @@ specifiers:
   babel-core: ^6.26.3
   babel-preset-env: ^1.7.0
   ejs: ^3.1.8
+  tapable: ^2.2.1
 
 dependencies:
   '@babel/parser': registry.npmmirror.com/@babel/parser/7.20.5
@@ -13,6 +14,7 @@ dependencies:
   babel-core: registry.npmmirror.com/babel-core/6.26.3
   babel-preset-env: registry.npmmirror.com/babel-preset-env/1.7.0
   ejs: registry.npmmirror.com/ejs/3.1.8
+  tapable: registry.npmmirror.com/tapable/2.2.1
 
 packages:
 
@@ -1300,6 +1302,13 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       has-flag: registry.npmmirror.com/has-flag/4.0.0
+    dev: false
+
+  registry.npmmirror.com/tapable/2.2.1:
+    resolution: {integrity: sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/tapable/-/tapable-2.2.1.tgz}
+    name: tapable
+    version: 2.2.1
+    engines: {node: '>=6'}
     dev: false
 
   registry.npmmirror.com/to-fast-properties/1.0.3:
